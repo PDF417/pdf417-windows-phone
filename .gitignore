@@ -1,0 +1,11 @@
+[Dd]ebug*
+[Rr]elease*
+[Bb]in
+*.user
+*.ipch
+*.opensdf
+vs-generated-header.h
+packages
+*.suo
+Thumbs.db
+*.sdf

@@ -1,0 +1,64 @@
+﻿<phone:PhoneApplicationPage
+    x:Class="PDF417Demo.ResultsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    mc:Ignorable="d"
+    shell:SystemTray.IsVisible="True">
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--TitlePanel contains the name of the application and page title-->
+        <StackPanel Grid.Row="0" Margin="12,17,0,28">
+            <TextBlock Text="Scan Results" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}"/>
+        </StackPanel>
+
+        <!--ContentPanel - place additional content here-->
+        <Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="100" />
+            </Grid.RowDefinitions>
+            <ScrollViewer VerticalScrollBarVisibility="Visible" >
+                <StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Data Type" HorizontalAlignment="Stretch" TextWrapping="Wrap" VerticalAlignment="Top"/>
+                        <TextBox x:Name="mDataType" HorizontalAlignment="Stretch" Height="72" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top"/>
+                    </StackPanel>
+                    <StackPanel x:Name="mUncertainPanel">
+                        <TextBlock Text="Uncertain" HorizontalAlignment="Stretch" TextWrapping="Wrap" VerticalAlignment="Top"/>
+                        <TextBox x:Name="mUncertain" HorizontalAlignment="Stretch" Height="72" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top"/>
+                    </StackPanel>
+                    <StackPanel x:Name="mRawPanel">
+                        <TextBlock Text="Scanned Data" HorizontalAlignment="Stretch" TextWrapping="Wrap" VerticalAlignment="Top"/>
+                        <TextBox x:Name="mRawBox" HorizontalAlignment="Stretch" Height="222" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" FontSize="20" />
+                    </StackPanel>
+                    <StackPanel x:Name="mDetailsPanel">                        
+                    </StackPanel>
+                    <StackPanel x:Name="mRawExtPanel">
+                        <TextBlock Text="Scanned Extended Data" HorizontalAlignment="Stretch" TextWrapping="Wrap" VerticalAlignment="Top"/>
+                        <TextBox x:Name="mRawExtBox" HorizontalAlignment="Stretch" Height="222" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" FontSize="20" />
+                    </StackPanel>
+                    <StackPanel x:Name="mDetailsExtPanel">                        
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" >                
+                <Button  Content="OK" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Margin="0,0,27,-84" Width="150" Click="Button_Click" />
+            </Grid>
+        </Grid>
+    </Grid>
+
+</phone:PhoneApplicationPage>
