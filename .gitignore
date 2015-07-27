@@ -1,5 +1,7 @@
 [Dd]ebug*
 [Rr]elease*
+!Release notes.md
+
 [Bb]in
 *.user
 *.ipch
