@@ -149,7 +149,7 @@ This section will cover more advanced details in _PDF417_ integration. First par
 ### _PDF417_ requirements
 Even before starting the scanning process, you should check if _PDF417_ is supported on current device. In order to be supported, device needs to have a camera.
 
-Windows Phone 8.0 is the minimum version on which _PDF417_ is supported. It is supported on Windows Phone 8.1 with minor adjustments and we expect Windows Phone 10.0 to be supported soon.
+Windows Phone 8.0 is the minimum version on which _PDF417_ is supported. It is supported on Windows Phone 8.1 with minor adjustments and we expect Windows 10.0 (Mobile) to be supported in 2016.
 
 Camera video preview resolution also matters. In order to perform successful scans, camera preview resolution cannot be too low. _PDF417_ requires minimum 480p camera preview resolution in order to perform scan. It must be noted that camera preview resolution is not the same as the video record resolution, although on most devices those are the same. However, there are some devices that allow recording of HD video (720p resolution), but do not allow high enough camera preview resolution. _PDF417_ does not work on those devices.
 
