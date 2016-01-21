@@ -9,6 +9,9 @@
   * [Checking if _PDF417_ is supported](#supportCheck)
   * [Embedding `RecognizerControl` into custom application page](#recognizerControl)
   * [`RecognizerControl` reference](#recognizerControlReference)
+* [Using direct API for recognition of Android Bitmaps](#directAPI)
+  * [Understanding DirectAPI's state machine](#directAPIStateMachine)
+  * [Using DirectAPI while RecognizerControl is active](#directAPIWithRecognizer)
 * [Recognition settings and results](#recognitionSettingsAndResults)
   * [Generic settings](#genericSettings)
   * [Scanning PDF417 barcodes](#pdf417Recognizer)
@@ -25,7 +28,7 @@
 
 The package contains Visual Studio 2012 solution(can open in VS 2013) that contains everything you need to get you started with _PDF417_ library. Demo project _PDF417Demo_ for Windows Phone 8.0 is included in solution containing the example use of _PDF417_ library.
  
-_PDF417_ is supported on Windows Phone 8.0. Windows Phone 8.1 can be supported with minor changes and Windows 10.0 (Mobile) is expected to be supported in 2016.
+_PDF417_ is supported on Windows Phone 8.0. Windows Phone 8.1 can be supported with minor changes and Windows Phone 10 is expected to be supported soon.
 
 # <a name="quickStart"></a> Quick Start
 
@@ -149,7 +152,7 @@ This section will cover more advanced details in _PDF417_ integration. First par
 ### _PDF417_ requirements
 Even before starting the scanning process, you should check if _PDF417_ is supported on current device. In order to be supported, device needs to have a camera.
 
-Windows Phone 8.0 is the minimum version on which _PDF417_ is supported. It is supported on Windows Phone 8.1 with minor adjustments and we expect Windows 10.0 (Mobile) to be supported in 2016.
+Windows Phone 8.0 is the minimum version on which _PDF417_ is supported. It is supported on Windows Phone 8.1 with minor adjustments and we expect Windows Phone 10.0 to be supported soon.
 
 Camera video preview resolution also matters. In order to perform successful scans, camera preview resolution cannot be too low. _PDF417_ requires minimum 480p camera preview resolution in order to perform scan. It must be noted that camera preview resolution is not the same as the video record resolution, although on most devices those are the same. However, there are some devices that allow recording of HD video (720p resolution), but do not allow high enough camera preview resolution. _PDF417_ does not work on those devices.
 
@@ -408,6 +411,79 @@ Image coordinates refer to coordinates in video frame that has been analyzed. Us
         
 ##### <a name="recognizerControl_OnShakingStartedEvent"></a> `OnShakingStartedEvent` 
 Event is triggered when device shaking starts.
+
+# <a name="directAPI"></a> Using direct API for recognition of Android Bitmaps
+
+This section will describe how to use direct API to recognize Windows Phone images without the need for camera.
+
+1. First, you need to obtain reference to `Recognizer` singleton.
+2. Second, you need to initialize the recognizer.
+3. After initialization, you can use the singleton to process images. You cannot process multiple images in parallel.
+4. Do not forget to terminate the recognizer after usage (it is a shared resource).
+
+Here is the minimum example of usage of direct API for recognizing an image:
+
+```csharp
+void InitDirectAPI() {
+	// setup direct API
+    Recognizer directRecognizer = Recognizer.GetSingletonInstance();                   
+    if (directRecognizer.CurrentState == RecognizerDirectAPIState.OFFLINE) { 
+    	// register event handler
+        directRecognizer.OnScanningDone += recognizer_OnScanningDone;
+        // unlock direct API
+        try {
+            directRecognizer.LicenseKey = "Enter license key here";
+        }
+        catch (InvalidLicenseKeyException exception) {
+            // handle license key exception
+        }
+    }
+    // recognize image
+    BitmapImage image = new BitmapImage(new Uri("/path/to/some/file.jpg", UriKind.Absolute));
+    directRecognizer.Recognize(image);
+}
+
+void recognizer_OnScanningDone(IList<Microblink.IRecognitionResult> resultList, RecognitionType recognitionType) {
+    bool resultFound = false;
+    if (recognitionType == RecognitionType.SUCCESSFUL) {                
+        foreach (var result in resultList) {
+            if (result.Valid && !result.Empty) {
+				// display recognition results                                       
+            }
+        }                
+    }
+}
+
+void TerminateDirectAPI() {
+	// terminate direct API
+    Recognizer.GetSingletonInstance().Terminate();
+}
+
+```
+
+## <a name="directAPIStateMachine"></a> Understanding DirectAPI's state machine
+
+DirectAPI's Recognizer singleton is actually a state machine which can be in one of 4 states: `OFFLINE`, `UNLOCKED`, `READY` and `WORKING`. 
+
+- When you obtain the reference to Recognizer singleton, it will be in `OFFLINE` state. 
+- First you need to unlock the Recognizer by providing a valid licence key using `LicenseKey` property(`Licensee` property can also be used if needed). If you attempt to set `LicenseKey` while Recognizer is not in `OFFLINE` state, you will get `InvalidOperationException`.
+- After successful unlocking, Recognizer singleton will move to `UNLOCKED` state.
+- Once in `UNLOCKED` state, you can initialize Recognizer by calling `Initialize` method. If you call `Initialize` method while Recognizer is not in `UNLOCKED` state, you will get `InvalidOperationException`.
+- After successful initialization, Recognizer will move to `READY` state. Now you can call `Recognize` method.
+- When starting recognition with `Recognize` methods, Recognizer will move to `WORKING` state. If you attempt to call these methods while Recognizer is not in `READY` state, you will get `InvalidOperationException`
+- Recognition is performed on background thread so it is safe to call all Recognizer's method from UI thread
+- When recognition is finished, Recognizer first moves back to `READY` state and then returns the result by fireing `OnScanningDone` event. 
+- By calling `Terminate` method, Recognizer singleton will release all its internal resources and will request processing thread to terminate. Note that even after calling `Terminate` you might receive `onScanningDone` event if there was work in progress when `Terminate` was called.
+- `Terminate` method can be called from any Recognizer singleton's state
+- You can observe Recognizer singleton's state via `CurrentState` property
+
+## <a name="directAPIWithRecognizer"></a> Using DirectAPI while RecognizerControl is active
+Both `RecognizerControl` and DirectAPI recognizer use the same internal singleton that manages native code. This singleton handles initialization and termination of native library and propagating recognition settings to native library. If both `RecognizerControl` and DirectAPI attempt to use the same singleton, a race condition will occur. This race condition is always solved in RecognizerControl's favor, i.e.:
+
+- if `RecognizerControl` initializes the internal singleton before DirectAPI, DirectAPI's method `Initialize` will detect that and will make sure that its settings are applied immediately before performing recognition and after recognition `RecognizerControl`'s settings will be restored to internal singleton
+- if DirectAPI initializes the internal singleton before `RecognizerControl`, `RecognizerControl` will detect that and will overwrite internal singleton's settings with its own settings. The side effect is that next call to `Recognize` on DirectAPI's Recognizer will **not** use settings given to `Initialize` method, but will instead use settings given to `RecognizerControl`.
+
+If this raises too much confusion, we suggest not using DirectAPI while `RecognizerControl` is active, instead use `RecognizerControl`'s methods `Recognize` or `RecognizeWithSettings` which will require no race conditions to be resolved.
 
 # <a name="recognitionSettingsAndResults"></a> Recognition settings and results
 
