@@ -27,7 +27,7 @@ namespace PDF417Demo
         private void InitializeRecognizer() {                       
             // sets license key
             // obtain your licence key at http://microblink.com/login or
-            // contact us at http://help.microblink.com                   
+            // contact us at http://help.microblink.com            
             mRecognizer.LicenseKey = "Add license key here";
 
             // add PDF417 & ZXing recognizer settings
